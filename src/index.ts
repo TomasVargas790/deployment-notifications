@@ -12,6 +12,7 @@ console.clear()
 const server = express()
 server.use(cors())
 server.use(json())
+server.use(express.urlencoded({ extended: true })); // Middleware to parse URL-encoded data
 
 server.use('/', ({ url, method, body }, _, next) => {
     if (environment === 'dev') {
@@ -28,10 +29,15 @@ server.post('/', async ({ body }, res) => {
     }
 
 })
-server.post('/pr', async (req, res) => {
-    console.log(req);
-    //await checkDeployment(id)
-    res.send()
+
+server.post('/pr', async ({ body: { text: id } }, res) => {
+    try {
+        res.send()
+        await checkDeployment(id)
+    } catch (error) {
+     console.error(error);
+        
+    }
 })
 
 
@@ -39,8 +45,8 @@ server.listen(port, () => console.log(`SERVER RUNNING ON ${port}`))
 
 async function checkDeployment(deployId: string) {
     let completed = false
+    let isFirstTime = true
     console.log('completed', completed);
-
 
     while (!completed) {
 
@@ -52,6 +58,11 @@ async function checkDeployment(deployId: string) {
         console.log(`Progreso: ${deployResult.numberComponentsDeployed}/${deployResult.numberComponentsTotal}`);
         console.log(`tests: ${deployResult.numberTestsCompleted}/${deployResult.numberTestsTotal}`);
         //console.table(deployResult.details.componentSuccesses || []);
+        const text = `
+        Deployment Status ${deployId}
+        Estado: ${deployResult.status}
+        Progreso: ${deployResult.numberComponentsDeployed}/${deployResult.numberComponentsTotal}
+        tests: ${deployResult.numberTestsCompleted}/${deployResult.numberTestsTotal}`
 
         if (deployResult.done) {
             completed = true;
@@ -61,19 +72,21 @@ async function checkDeployment(deployId: string) {
                 console.error('El despliegue falló.');
                 console.error('Errores:', deployResult.details.componentFailures || []);
             }
-            const text = `
-    Deployment Status ${deployId}
-    Estado: ${deployResult.status}
-    Progreso: ${deployResult.numberComponentsDeployed}/${deployResult.numberComponentsTotal}
-    tests: ${deployResult.numberTestsCompleted}/${deployResult.numberTestsTotal}`
 
             slackConection.chat.postMessage({
-                channel: 'C088GTX1B9S',
+                channel: 'C088LKXA5NK',
                 text
             })
-            //SFConection.request('/services/data/v62.0/actions/custom/flow/', { input: [{ deployId, user: deployResult.createdByName }] })
 
         } else {
+            if (isFirstTime) {
+                slackConection.chat.postMessage({
+                    channel: 'C088LKXA5NK',
+                    text:`Validando...
+                    ${text}`
+                })
+                isFirstTime = false
+            }
             await new Promise((resolve) => setTimeout(resolve, 5000));
         }
 
