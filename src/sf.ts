@@ -1,9 +1,10 @@
-import jsforce from "jsforce";
-import { env } from "./env";
+import { Connection } from "jsforce";
+import { env } from "./env.ts";
 
-const { sf: { user, pass } } = env
+const { sf: { instanceUrl, token } } = env
 
-const conn = new jsforce.Connection();
-await conn.login(user, pass)
-
-export default conn
+const con = new Connection({
+    instanceUrl,
+    sessionId: token
+})
+export default con

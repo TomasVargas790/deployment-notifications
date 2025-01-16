@@ -6,6 +6,7 @@ type APIConfig = {
 
 type SFConfig = {
     token: string,
+    instanceUrl: string,
     user: string,
     pass: string
 }
@@ -32,7 +33,8 @@ const { PORT,
     SF_TOKEN,
     SF_USER,
     SF_PASS,
-    SLACK_TOKEN } = process.env;
+    SLACK_TOKEN,
+    SF_INSTANCE_URL } = process.env;
 
 
 const apiConfig: APIConfig = {
@@ -44,7 +46,8 @@ const apiConfig: APIConfig = {
 const sfConfig: SFConfig = {
     token: SF_TOKEN as string,
     user: SF_USER as string,
-    pass: SF_PASS as string
+    pass: SF_PASS as string,
+    instanceUrl: SF_INSTANCE_URL as string
 }
 
 export const env: EnvType = {
