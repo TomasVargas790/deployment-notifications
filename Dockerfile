@@ -2,7 +2,7 @@
 FROM node:22
 
 # 2. Creamos y definimos el directorio de trabajo
-WORKDIR /app
+WORKDIR /.
 
 # 3. Copiamos los archivos de definición de dependencias
 COPY package*.json ./
