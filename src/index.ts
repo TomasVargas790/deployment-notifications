@@ -35,13 +35,31 @@ server.post('/pr', async ({ body: { text: id } }, res) => {
         res.send()
         await checkDeployment(id)
     } catch (error) {
-     console.error(error);
-        
+        console.error(error);
+
     }
 })
 
 
-server.listen(port, () => console.log(`SERVER RUNNING ON ${port}`))
+server.listen(port, async () => {
+    console.log(`SERVER RUNNING ON ${port}`)
+    try {
+        const connection = await SFConection.identity();
+        console.log(`SF connection: ${connection.id != undefined ? 'OK' : 'FAILED'}`);
+    } catch (ex) {
+        console.error(`Error connecting to Salesforce, check .env file`);
+        console.error(ex);
+        process.exit(1);
+    }
+    try {
+        const connection = await slackConection.api.test()
+        console.log(`SLACK connection: ${connection.ok ? 'OK' : 'FAILED'}`);
+    } catch (ex) {
+        console.error(`Error connecting to Slack, check.env file`);
+        console.error(ex);
+        process.exit(1);
+    }
+})
 
 async function checkDeployment(deployId: string) {
     let completed = false
@@ -54,7 +72,7 @@ async function checkDeployment(deployId: string) {
         console.clear();
 
 
-        console.log(`Estado: ${deployResult.status}`);
+        console.log(`Estado: ${deployResult.status} `);
         console.log(`Progreso: ${deployResult.numberComponentsDeployed}/${deployResult.numberComponentsTotal}`);
         console.log(`tests: ${deployResult.numberTestsCompleted}/${deployResult.numberTestsTotal}`);
         //console.table(deployResult.details.componentSuccesses || []);
@@ -82,7 +100,7 @@ async function checkDeployment(deployId: string) {
             if (isFirstTime) {
                 slackConection.chat.postMessage({
                     channel: 'C088LKXA5NK',
-                    text:`Validando...
+                    text: `Validando...
                     ${text}`
                 })
                 isFirstTime = false
@@ -92,3 +110,4 @@ async function checkDeployment(deployId: string) {
 
     }
 }
+
